@@ -1,9 +1,8 @@
+from database.setup import create_tables
 from database.connection import get_db_connection
 from models.article import Article
 from models.author import Author
 from models.magazine import Magazine
-from database.setup import create_tables
-
 
 def main():
     # Initialize the database and create tables
@@ -16,20 +15,23 @@ def main():
     article_title = input("Enter article title: ")
     article_content = input("Enter article content: ")
 
-    # Connect to the database with row_factory to access results as dictionaries
+    # Connect to the database
     conn = get_db_connection()
-    conn.row_factory = lambda cursor, row: {
-        col[0]: row[idx] for idx, col in enumerate(cursor.description)
-    }
     cursor = conn.cursor()
+
+
+    '''
+        The following is just for testing purposes, 
+        you can modify it to meet the requirements of your implmentation.
+    '''
 
     # Create an author
     cursor.execute('INSERT INTO authors (name) VALUES (?)', (author_name,))
-    author_id = cursor.lastrowid  # Get the id of the newly created author
+    author_id = cursor.lastrowid # Use this to fetch the id of the newly created author
 
     # Create a magazine
-    cursor.execute('INSERT INTO magazines (name, category) VALUES (?, ?)', (magazine_name, magazine_category))
-    magazine_id = cursor.lastrowid  # Get the id of the newly created magazine
+    cursor.execute('INSERT INTO magazines (name, category) VALUES (?,?)', (magazine_name, magazine_category))
+    magazine_id = cursor.lastrowid # Use this to fetch the id of the newly created magazine
 
     # Create an article
     cursor.execute('INSERT INTO articles (title, content, author_id, magazine_id) VALUES (?, ?, ?, ?)',
@@ -37,7 +39,9 @@ def main():
 
     conn.commit()
 
-    # Query the database for inserted records
+    # Query the database for inserted records. 
+    # The following fetch functionality should probably be in their respective models
+
     cursor.execute('SELECT * FROM magazines')
     magazines = cursor.fetchall()
 
@@ -60,14 +64,7 @@ def main():
 
     print("\nArticles:")
     for article in articles:
-        # We pass the magazine_id instead of the full Magazine object.
-        print(Article(
-            article["id"],
-            article["title"],
-            article["content"],
-            article["author_id"],  # Use author_id here
-            article["magazine_id"]  # Use magazine_id here
-        ))
+        print(Article(article["id"], article["title"], article["content"], article["author_id"], article["magazine_id"]))
 
-if __name__ == "__main__":
+if __name__ == "_main_":
     main()
